@@ -1,6 +1,5 @@
 """
 手语乐园 - 兴趣区（手语舞）
-使用 MoviePy 1.0.3
 """
 
 import streamlit as st
@@ -8,11 +7,16 @@ import os
 import tempfile
 import time
 
-# 旧版导入方式（MoviePy 1.0.3）
-from moviepy.editor import VideoFileClip, concatenate_videoclips
-from moviepy.editor import AudioFileClip
-
-MOVIEPY_OK = True
+# 导入 moviepy
+try:
+    from moviepy import VideoFileClip, concatenate_videoclips
+    MOVIEPY_OK = True
+except ImportError:
+    try:
+        from moviepy import VideoFileClip, concatenate_videoclips
+        MOVIEPY_OK = True
+    except ImportError:
+        MOVIEPY_OK = False
 
 # 配置路径
 VIDEO_DIR = "videos"
@@ -24,6 +28,9 @@ if not os.path.exists(AUDIO_DIR):
 
 def text_to_video_clip(text):
     """把一句话转成手语视频片段（无声）"""
+    
+    if not MOVIEPY_OK:
+        return None
     
     words = text.split()
     if len(words) == 0:
@@ -60,6 +67,9 @@ def text_to_video_clip(text):
 def generate_sign_dance_video(lyrics_lines, progress_callback=None):
     """生成手语舞视频（无声）"""
     
+    if not MOVIEPY_OK:
+        return None, "moviepy 未安装"
+    
     video_clips = []
     failed_lines = []
     
@@ -81,12 +91,22 @@ def generate_sign_dance_video(lyrics_lines, progress_callback=None):
     else:
         final_video = concatenate_videoclips(video_clips)
     
-    # 保存临时文件
+    # 修复FFMPEG错误：使用更稳定的保存方式
     try:
+        # 使用带时间戳的文件名，避免冲突
         temp_filename = f"shouyu_temp_{int(time.time())}.mp4"
         temp_path = os.path.join(tempfile.gettempdir(), temp_filename)
-        final_video.write_videofile(temp_path, codec='libx264', audio_codec='aac')
+        
+        # 写入视频文件，指定编码器
+        final_video.write_videofile(
+            temp_path, 
+            codec='libx264', 
+            audio_codec='aac',
+            verbose=False,
+            logger=None
+        )
     except Exception as e:
+        # 如果失败，尝试更简单的方式
         try:
             temp_path = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4').name
             final_video.write_videofile(temp_path)
@@ -105,6 +125,12 @@ def generate_sign_dance_video(lyrics_lines, progress_callback=None):
 def interest_section():
     st.markdown('<h3 style="color:#3a5a6e;">🎵 创 · 手语舞</h3>', unsafe_allow_html=True)
     st.markdown('<p style="color:#6b8a9e;">上传音乐，让手语随旋律绽放</p >', unsafe_allow_html=True)
+    # ... 其余代码不变
+    
+    if not MOVIEPY_OK:
+        st.error("❌ moviepy 未正确安装")
+        st.code("请运行: pip install moviepy==1.0.3", language="bash")
+        return
     
     if not os.path.exists(VIDEO_DIR):
         st.error("❌ videos 文件夹不存在")
@@ -154,7 +180,7 @@ def interest_section():
     st.markdown("""
     <div style="background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%); border-radius: 20px; padding: 1rem; margin: 1rem 0;">
         <h3>📝 第二步：输入歌词</h3>
-        <p>每句一行，系统会根据歌词自动匹配手语视频</p >
+        <p>每句一行，系统会根据歌词自动匹配手语视频</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -249,8 +275,10 @@ def interest_section():
         </div>
         """, unsafe_allow_html=True)
         
+        # 手语舞视频
         st.video(st.session_state.generated_video_path)
         
+        # 下载按钮
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
             with open(st.session_state.generated_video_path, "rb") as f:
@@ -262,18 +290,29 @@ def interest_section():
                     use_container_width=True
                 )
         
+        # 音乐试听区
         if audio_path and os.path.exists(audio_path):
             st.markdown("""
             <div style="background: linear-gradient(135deg, #fa709a30 0%, #fee14030 100%); border-radius: 20px; padding: 1rem; margin: 1rem 0;">
                 <h3 style="text-align: center;">🎵 音乐试听</h3>
-                <p style="text-align: center;">边听音乐边看手语舞，跟着节奏学习</p >
+                <p style="text-align: center;">边听音乐边看手语舞，跟着节奏学习</p>
             </div>
             """, unsafe_allow_html=True)
             
+            # 音乐播放器
             st.audio(audio_path, format="audio/mp3")
-            st.caption(f"🎵 {audio_filename}")
+            
+            try:
+                from moviepy import AudioFileClip
+                test_audio = AudioFileClip(audio_path)
+                st.caption(f"🎵 {audio_filename} | 时长：{test_audio.duration:.1f} 秒")
+                test_audio.close()
+            except:
+                st.caption(f"🎵 {audio_filename}")
+            
             st.info("💡 提示：可以同时播放音乐和手语舞视频，边听边学！")
 
+# 测试用
 if __name__ == "__main__":
     st.set_page_config(page_title="手语舞", page_icon="🎵")
     interest_section()
