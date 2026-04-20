@@ -1,7 +1,7 @@
 """
 手语乐园 - 最终完整版
 功能：学习区 + 兴趣区（手语舞）
-视觉：浅绿色底 + 4色块切割 + 20片飘落树叶 + 点击开花
+视觉：浅绿色底 + 4色块切割 + 20片飘落树叶 
 """
 
 import streamlit as st
@@ -207,37 +207,6 @@ st.markdown("""
 <div class="falling-leaf">🍃</div>
 """, unsafe_allow_html=True)
 
-# ==================== 点击开花特效 ====================
-components.html("""
-<script>
-document.addEventListener('click', function(e) {
-    // 避免在按钮上重复触发
-    if(e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
-    
-    const leaves = ['🍃', '🍂', '🌿'];
-    const leaf = document.createElement('div');
-    leaf.innerText = leaves[Math.floor(Math.random() * leaves.length)];
-    leaf.style.position = 'fixed';
-    leaf.style.left = (e.clientX - 15) + 'px';
-    leaf.style.top = (e.clientY - 15) + 'px';
-    leaf.style.fontSize = '1.8rem';
-    leaf.style.opacity = '1';
-    leaf.style.transition = 'all 0.8s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
-    leaf.style.pointerEvents = 'none';
-    leaf.style.zIndex = '10000';
-    leaf.style.filter = 'drop-shadow(0 2px 6px rgba(0,0,0,0.2))';
-    document.body.appendChild(leaf);
-    
-    setTimeout(() => {
-        leaf.style.opacity = '0';
-        leaf.style.transform = 'translateY(-50px) rotate(30deg) scale(1.2)';
-    }, 20);
-    setTimeout(() => {
-        leaf.remove();
-    }, 800);
-});
-</script>
-""", height=0)
 
 # ==================== 状态管理 ====================
 if "start" not in st.session_state:
