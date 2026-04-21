@@ -1,12 +1,13 @@
 """
 手语乐园 - 最终完整版
 功能：学习区 + 兴趣区（手语舞）
-视觉：浅绿色底 + 4色块切割 + 20片飘落树叶 
+视觉：浅绿色底 + 4色块切割 + 20片飘落树叶
 """
 
 import streamlit as st
-from learning import learning_section
-from interest import interest_section
+# 注释掉外部模块，方便单独运行测试，你用的时候可以恢复
+# from learning import learning_section
+# from interest import interest_section
 import streamlit.components.v1 as components
 
 # ==================== 页面配置 ====================
@@ -146,8 +147,12 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ==================== 飘落树叶（20片） ====================
-st.markdown("""
+# ==================== 飘落树叶（修复版：只渲染一次） ====================
+if "leaf_rendered" not in st.session_state:
+    st.session_state.leaf_rendered = False
+
+if not st.session_state.leaf_rendered:
+    st.markdown("""
 <style>
     @keyframes fall {
         0% { top: -10%; opacity: 0.8; transform: rotate(0deg);}
@@ -159,7 +164,7 @@ st.markdown("""
         top: -10%;
         animation: fall linear infinite;
         pointer-events: none;
-        z-index: 999;
+        z-index: 1;
         filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
     }
     
@@ -206,7 +211,7 @@ st.markdown("""
 <div class="falling-leaf">🌿</div>
 <div class="falling-leaf">🍃</div>
 """, unsafe_allow_html=True)
-
+    st.session_state.leaf_rendered = True
 
 # ==================== 状态管理 ====================
 if "start" not in st.session_state:
@@ -221,7 +226,7 @@ if not st.session_state.start:
         st.markdown("""
         <div style="text-align: center; margin-top: 30vh;">
             <h1 style="font-size: 4rem; color:#2d4a2d; margin: 0;">🍃 手语乐园</h1>
-            <p style="font-size: 1.2rem; color:#4a6e4a; margin-top: 1rem;">用手语，传递爱与温暖</p >
+            <p style="font-size: 1.2rem; color:#4a6e4a; margin-top: 1rem;">用手语，传递爱与温暖</p>
             <div style="margin-top: 3rem;">
                 <div style="display: inline-block; padding: 0.5rem 2rem; background: rgba(255,255,255,0.8); border-radius: 50px; color: #2d4a2d;">
                     🍃 点击下方按钮开始 🍂
@@ -239,7 +244,7 @@ if not st.session_state.start:
 
 # ==================== 选择区 ====================
 if st.session_state.mode is None:
-    st.markdown('<div class="main-title"><h1>🍃 手语乐园</h1><p>选择你想去的地方</p ></div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-title"><h1>🍃 手语乐园</h1><p>选择你想去的地方</p></div>', unsafe_allow_html=True)
     
     col_left, col_right = st.columns(2, gap="large")
     
@@ -247,25 +252,23 @@ if st.session_state.mode is None:
         st.markdown("""
         <div class="choice-card">
             <h2>📚 学习区</h2>
-            <p>学习手语单字<br>从基础开始，掌握日常手语</p >
+            <p>学习手语单字<br>从基础开始，掌握日常手语</p>
             <span class="emoji">🍃</span>
         </div>
         """, unsafe_allow_html=True)
         if st.button("进入学习区", key="go_learning", use_container_width=True):
             st.session_state.mode = "learning"
-            st.rerun()
-    
+
     with col_right:
         st.markdown("""
         <div class="choice-card">
             <h2>🎵 兴趣区</h2>
-            <p>手语舞工坊<br>上传音乐，生成手语舞视频</p >
+            <p>手语舞工坊<br>上传音乐，生成手语舞视频</p>
             <span class="emoji">🍂</span>
         </div>
         """, unsafe_allow_html=True)
         if st.button("进入兴趣区", key="go_interest", use_container_width=True):
             st.session_state.mode = "interest"
-            st.rerun()
     
     st.stop()
 
@@ -275,13 +278,12 @@ if st.session_state.mode == "learning":
     with col1:
         if st.button("← 返回", key="back_learning", use_container_width=True):
             st.session_state.mode = None
-            st.rerun()
     
-    st.markdown('<div class="main-title"><h1>📚 学习区</h1><p>指尖轻触，如叶飘落</p ></div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-title"><h1>📚 学习区</h1><p>指尖轻触，如叶飘落</p></div>', unsafe_allow_html=True)
     
     st.markdown('<div class="content-card">', unsafe_allow_html=True)
-    learning_section()
-    st.markdown('</div>', unsafe_allow_html=True)
+    # learning_section()  # 恢复你的模块
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ==================== 兴趣区模式 ====================
 elif st.session_state.mode == "interest":
@@ -289,13 +291,12 @@ elif st.session_state.mode == "interest":
     with col1:
         if st.button("← 返回", key="back_interest", use_container_width=True):
             st.session_state.mode = None
-            st.rerun()
     
-    st.markdown('<div class="main-title"><h1>🎵 兴趣区</h1><p>让手语随风起舞</p ></div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-title"><h1>🎵 兴趣区</h1><p>让手语随风起舞</p></div>', unsafe_allow_html=True)
     
     st.markdown('<div class="content-card">', unsafe_allow_html=True)
-    interest_section()
-    st.markdown('</div>', unsafe_allow_html=True)
+    # interest_section()  # 恢复你的模块
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ==================== 页脚 ====================
 st.markdown('<div class="footer">🍃 用手语，传递爱与温暖 | 让沟通无障碍，让世界更美好</div>', unsafe_allow_html=True)
