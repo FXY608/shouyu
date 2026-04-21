@@ -114,10 +114,10 @@ def text_to_video_clip(text, video_mapping):
             return concatenate_videoclips(clips)
 
 def generate_sign_dance_video(lyrics_lines, video_mapping, progress_callback=None):
-    """生成手语舞视频（使用临时文件）"""
+    """生成手语舞视频（优化版）"""
     
     if not MOVIEPY_OK:
-        return None, "moviepy 未安装，请运行: pip install moviepy"
+        return None, "moviepy 未安装"
     
     if not video_mapping:
         return None, "没有找到任何视频素材"
@@ -127,10 +127,13 @@ def generate_sign_dance_video(lyrics_lines, video_mapping, progress_callback=Non
     
     for i, line in enumerate(lyrics_lines):
         if progress_callback:
-            progress_callback(i, len(lyrics_lines), f"🎬 处理第 {i+1}/{len(lyrics_lines)} 句: {line[:30]}...")
+            progress_callback(i, len(lyrics_lines), f"🎬 处理第 {i+1}/{len(lyrics_lines)} 句")
         
         clip = text_to_video_clip(line, video_mapping)
         if clip:
+            # 降低视频分辨率以节省内存
+            if clip.h > 480:  # 如果高度大于480p
+                clip = clip.resize(height=480)
             video_clips.append(clip)
         else:
             failed_lines.append(line)
@@ -147,26 +150,24 @@ def generate_sign_dance_video(lyrics_lines, video_mapping, progress_callback=Non
     except Exception as e:
         return None, f"视频合成失败: {e}"
     
-    # 使用 tempfile 创建临时文件（关键修复）
+    # 使用 tempfile 创建临时文件
     try:
-        st.info("🎬 正在渲染视频，请稍候...")
+        st.info("🎬 正在渲染视频，请稍候...（小视频约需30秒）")
         
-        # 创建临时文件（自动管理，兼容云端）
         with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4', dir=TEMP_DIR) as temp_file:
             temp_path = temp_file.name
         
-        # 写入视频（使用 H.264 编码，兼容性最好）
+        # 优化后的写入参数（降低质量、加快速度）
         final_video.write_videofile(
             temp_path,
-            codec='libx264',  # H.264 编码，兼容性最好
+            codec='libx264',
             audio_codec='aac',
-            fps=24,
-            preset='fast',  # 使用 fast 预设提高速度
-            temp_audiofile=os.path.join(TEMP_DIR, 'temp_audio.m4a'),
-            remove_temp=True
+            fps=20,  # 降低帧率从24到20
+            preset='ultrafast',  # 最快的编码预设
+            bitrate='500k',  # 降低码率，减小文件大小
+            threads=2  # 限制线程数，避免内存爆炸
         )
         
-        # 验证文件是否生成成功
         if not os.path.exists(temp_path) or os.path.getsize(temp_path) == 0:
             raise Exception("视频文件生成失败")
         
@@ -181,7 +182,6 @@ def generate_sign_dance_video(lyrics_lines, video_mapping, progress_callback=Non
         return temp_path, failed_lines
         
     except Exception as e:
-        # 清理资源
         final_video.close()
         for clip in video_clips:
             try:
