@@ -6,8 +6,8 @@
 
 import streamlit as st
 # 注释掉外部模块，方便单独运行测试，你用的时候可以恢复
-# from learning import learning_section
-# from interest import interest_section
+from learning import learning_section
+from interest import interest_section
 import streamlit.components.v1 as components
 
 # ==================== 页面配置 ====================
