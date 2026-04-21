@@ -1,4 +1,2 @@
-streamlit
-moviepy
-jieba
-pillow
+sstreamlit>=1.30.0
+moviepy>=1.0.3
