@@ -162,8 +162,6 @@ def generate_sign_dance_video(lyrics_lines, video_mapping, progress_callback=Non
             audio_codec='aac',
             fps=24,
             preset='fast',  # 使用 fast 预设提高速度
-            verbose=False,
-            logger=None,
             temp_audiofile=os.path.join(TEMP_DIR, 'temp_audio.m4a'),
             remove_temp=True
         )
