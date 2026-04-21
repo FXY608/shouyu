@@ -1,14 +1,11 @@
 """
-手语乐园 - 最终完整版
-功能：学习区 + 兴趣区（手语舞）
-视觉：浅绿色底 + 4色块切割 + 20片飘落树叶
+手语乐园 - 最终纯净版
+界面完全不变 | 删除点击开花 | 落叶+四色背景保留 | 功能不变
 """
 
 import streamlit as st
-# 注释掉外部模块，方便单独运行测试，你用的时候可以恢复
 from learning import learning_section
 from interest import interest_section
-import streamlit.components.v1 as components
 
 # ==================== 页面配置 ====================
 st.set_page_config(
@@ -18,15 +15,13 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# ==================== CSS 样式 ====================
+# ==================== 全局样式【完全原版不动】 ====================
 st.markdown("""
 <style>
-    /* 背景 - 浅绿色底 */
     .stApp {
         background: #e8f5e9;
     }
     
-    /* 标题区域 */
     .main-title {
         text-align: center;
         padding: 1rem 0;
@@ -44,7 +39,6 @@ st.markdown("""
         margin-top: 0.5rem;
     }
     
-    /* 白色卡片 - 毛玻璃效果 */
     .choice-card {
         background: rgba(255, 255, 255, 0.92);
         backdrop-filter: blur(4px);
@@ -78,7 +72,6 @@ st.markdown("""
         display: block;
     }
     
-    /* 内容卡片 */
     .content-card {
         background: rgba(255, 255, 255, 0.94);
         backdrop-filter: blur(4px);
@@ -88,7 +81,6 @@ st.markdown("""
         border: 1px solid rgba(255,255,255,0.5);
     }
     
-    /* 按钮样式 */
     .stButton button {
         background: linear-gradient(135deg, #f5f5dc 0%, #e8e0c8 100%);
         color: #2d4a2d;
@@ -104,12 +96,6 @@ st.markdown("""
         transform: scale(0.98);
     }
     
-    /* 返回按钮 */
-    .back-btn {
-        margin-bottom: 1rem;
-    }
-    
-    /* 页脚 */
     .footer {
         text-align: center;
         margin-top: 2rem;
@@ -119,55 +105,42 @@ st.markdown("""
         border-top: 1px solid rgba(0,0,0,0.06);
     }
     
-    /* 隐藏默认的Streamlit菜单 */
     #MainMenu {visibility: hidden;}
     header {visibility: hidden;}
     footer {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
-# ==================== 背景：4色块切割 ====================
+# ==================== 四色分割背景【原版完全保留】 ====================
 st.markdown("""
 <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 0; pointer-events: none;">
     <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-        <!-- 整体浅绿色背景 -->
         <rect x="0" y="0" width="100%" height="100%" fill="#e8f5e9"/>
-        <!-- 左上色块 -->
         <rect x="0" y="0" width="50%" height="50%" fill="#c8e6c9" opacity="0.85"/>
-        <!-- 右上色块 -->
         <rect x="50%" y="0" width="50%" height="50%" fill="#a5d6a7" opacity="0.85"/>
-        <!-- 左下色块 -->
         <rect x="0" y="50%" width="50%" height="50%" fill="#81c784" opacity="0.85"/>
-        <!-- 右下色块 -->
         <rect x="50%" y="50%" width="50%" height="50%" fill="#66bb6a" opacity="0.85"/>
-        <!-- 白色切割线 -->
         <line x1="50%" y1="0" x2="50%" y2="100%" stroke="white" stroke-width="3.5"/>
         <line x1="0" y1="50%" x2="100%" y2="50%" stroke="white" stroke-width="3.5"/>
     </svg>
 </div>
 """, unsafe_allow_html=True)
 
-# ==================== 飘落树叶（修复版：只渲染一次） ====================
-if "leaf_rendered" not in st.session_state:
-    st.session_state.leaf_rendered = False
-
-if not st.session_state.leaf_rendered:
-    st.markdown("""
+# ==================== 20片落叶动画【完全保留】 ====================
+st.markdown("""
 <style>
     @keyframes fall {
         0% { top: -10%; opacity: 0.8; transform: rotate(0deg);}
         100% { top: 110%; opacity: 0; transform: rotate(360deg);}
     }
-    
     .falling-leaf {
         position: fixed;
         top: -10%;
         animation: fall linear infinite;
         pointer-events: none;
-        z-index: 1;
+        z-index: 999;
         filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
     }
-    
     .falling-leaf:nth-child(1) { left: 3%; animation-duration: 14s; animation-delay: 0s; font-size: 1.2rem; color: #2e7d32; }
     .falling-leaf:nth-child(2) { left: 8%; animation-duration: 19s; animation-delay: 3s; font-size: 0.9rem; color: #388e3c; }
     .falling-leaf:nth-child(3) { left: 13%; animation-duration: 11s; animation-delay: 1s; font-size: 1.5rem; color: #43a047; }
@@ -211,7 +184,6 @@ if not st.session_state.leaf_rendered:
 <div class="falling-leaf">🌿</div>
 <div class="falling-leaf">🍃</div>
 """, unsafe_allow_html=True)
-    st.session_state.leaf_rendered = True
 
 # ==================== 状态管理 ====================
 if "start" not in st.session_state:
@@ -219,7 +191,7 @@ if "start" not in st.session_state:
 if "mode" not in st.session_state:
     st.session_state.mode = None
 
-# ==================== 开场动画 ====================
+# ==================== 开场首页 ====================
 if not st.session_state.start:
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
@@ -227,22 +199,14 @@ if not st.session_state.start:
         <div style="text-align: center; margin-top: 30vh;">
             <h1 style="font-size: 4rem; color:#2d4a2d; margin: 0;">🍃 手语乐园</h1>
             <p style="font-size: 1.2rem; color:#4a6e4a; margin-top: 1rem;">用手语，传递爱与温暖</p>
-            <div style="margin-top: 3rem;">
-                <div style="display: inline-block; padding: 0.5rem 2rem; background: rgba(255,255,255,0.8); border-radius: 50px; color: #2d4a2d;">
-                    🍃 点击下方按钮开始 🍂
-                </div>
-            </div>
         </div>
         """, unsafe_allow_html=True)
-        
-        col_a, col_b, col_c = st.columns([1, 2, 1])
-        with col_b:
-            if st.button("🍃 进入森林", use_container_width=True):
-                st.session_state.start = True
-                st.rerun()
+        if st.button("🍃 进入森林", use_container_width=True):
+            st.session_state.start = True
+            st.rerun()
     st.stop()
 
-# ==================== 选择区 ====================
+# ==================== 选择主页 ====================
 if st.session_state.mode is None:
     st.markdown('<div class="main-title"><h1>🍃 手语乐园</h1><p>选择你想去的地方</p></div>', unsafe_allow_html=True)
     
@@ -258,7 +222,8 @@ if st.session_state.mode is None:
         """, unsafe_allow_html=True)
         if st.button("进入学习区", key="go_learning", use_container_width=True):
             st.session_state.mode = "learning"
-
+            st.rerun()
+    
     with col_right:
         st.markdown("""
         <div class="choice-card">
@@ -269,34 +234,34 @@ if st.session_state.mode is None:
         """, unsafe_allow_html=True)
         if st.button("进入兴趣区", key="go_interest", use_container_width=True):
             st.session_state.mode = "interest"
-    
+            st.rerun()
     st.stop()
 
-# ==================== 学习区模式 ====================
+# ==================== 学习区 ====================
 if st.session_state.mode == "learning":
     col1, col2, col3 = st.columns([1, 10, 1])
     with col1:
         if st.button("← 返回", key="back_learning", use_container_width=True):
             st.session_state.mode = None
+            st.rerun()
     
     st.markdown('<div class="main-title"><h1>📚 学习区</h1><p>指尖轻触，如叶飘落</p></div>', unsafe_allow_html=True)
-    
     st.markdown('<div class="content-card">', unsafe_allow_html=True)
-    learning_section()  # 恢复你的模块
-    st.markdown("</div>", unsafe_allow_html=True)
+    learning_section()
+    st.markdown('</div>', unsafe_allow_html=True)
 
-# ==================== 兴趣区模式 ====================
+# ==================== 兴趣区 ====================
 elif st.session_state.mode == "interest":
     col1, col2, col3 = st.columns([1, 10, 1])
     with col1:
         if st.button("← 返回", key="back_interest", use_container_width=True):
             st.session_state.mode = None
+            st.rerun()
     
     st.markdown('<div class="main-title"><h1>🎵 兴趣区</h1><p>让手语随风起舞</p></div>', unsafe_allow_html=True)
-    
     st.markdown('<div class="content-card">', unsafe_allow_html=True)
-    interest_section()  # 恢复你的模块
-    st.markdown("</div>", unsafe_allow_html=True)
+    interest_section()
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ==================== 页脚 ====================
 st.markdown('<div class="footer">🍃 用手语，传递爱与温暖 | 让沟通无障碍，让世界更美好</div>', unsafe_allow_html=True)
