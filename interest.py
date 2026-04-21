@@ -64,15 +64,13 @@ def load_videos_to_memory(video_dir):
     return video_mapping
 
 def text_to_video_clip(text, video_mapping):
-    """把一句话转成手语视频片段（无声）"""
+    """把一句话转成手语视频片段（自动压缩）"""
     
     if not MOVIEPY_OK:
         return None
     
     text = preprocess_text(text)
     words = text.split()
-    if len(words) == 0:
-        words = [text]
     
     video_paths = []
     for word in words:
@@ -80,26 +78,25 @@ def text_to_video_clip(text, video_mapping):
             continue
         
         video_path = find_video_for_word(word, video_mapping)
-        
-        if not video_path and len(word) > 1:
-            video_path = find_video_for_word(word.replace(' ', '_'), video_mapping)
-        
         if video_path:
             video_paths.append(video_path)
-        else:
-            st.warning(f"⚠️ 找不到视频: {word}")
     
     if not video_paths:
         return None
     
-    # 加载视频片段
     clips = []
     for path in video_paths:
         try:
             clip = VideoFileClip(path)
+            # 修改这里：resize → resized
+            if clip.h > 360:
+                clip = clip.resized(height=360)  # ← 改这里
+            # 限制时长
+            if clip.duration > 3:
+                clip = clip.subclipped(0, 3)
             clips.append(clip)
         except Exception as e:
-            st.warning(f"加载视频失败 {os.path.basename(path)}: {e}")
+            st.warning(f"加载视频失败: {e}")
             continue
     
     if not clips:
@@ -131,9 +128,9 @@ def generate_sign_dance_video(lyrics_lines, video_mapping, progress_callback=Non
         
         clip = text_to_video_clip(line, video_mapping)
         if clip:
-            # 降低视频分辨率以节省内存
-            if clip.h > 480:  # 如果高度大于480p
-                clip = clip.resize(height=480)
+            # 修改这里：resize → resized
+            if clip.h > 480:
+                clip = clip.resized(height=480)  # ← 改这里
             video_clips.append(clip)
         else:
             failed_lines.append(line)
@@ -150,22 +147,21 @@ def generate_sign_dance_video(lyrics_lines, video_mapping, progress_callback=Non
     except Exception as e:
         return None, f"视频合成失败: {e}"
     
-    # 使用 tempfile 创建临时文件
+    # 保存视频
     try:
-        st.info("🎬 正在渲染视频，请稍候...（小视频约需30秒）")
+        st.info("🎬 正在渲染视频，请稍候...")
         
         with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4', dir=TEMP_DIR) as temp_file:
             temp_path = temp_file.name
         
-        # 优化后的写入参数（降低质量、加快速度）
         final_video.write_videofile(
             temp_path,
             codec='libx264',
             audio_codec='aac',
-            fps=20,  # 降低帧率从24到20
-            preset='ultrafast',  # 最快的编码预设
-            bitrate='500k',  # 降低码率，减小文件大小
-            threads=2  # 限制线程数，避免内存爆炸
+            fps=20,
+            preset='ultrafast',
+            bitrate='500k',
+            threads=2
         )
         
         if not os.path.exists(temp_path) or os.path.getsize(temp_path) == 0:
