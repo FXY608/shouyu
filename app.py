@@ -282,7 +282,7 @@ if st.session_state.mode == "learning":
     st.markdown('<div class="main-title"><h1>📚 学习区</h1><p>指尖轻触，如叶飘落</p></div>', unsafe_allow_html=True)
     
     st.markdown('<div class="content-card">', unsafe_allow_html=True)
-    # learning_section()  # 恢复你的模块
+    learning_section()  # 恢复你的模块
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ==================== 兴趣区模式 ====================
@@ -295,7 +295,7 @@ elif st.session_state.mode == "interest":
     st.markdown('<div class="main-title"><h1>🎵 兴趣区</h1><p>让手语随风起舞</p></div>', unsafe_allow_html=True)
     
     st.markdown('<div class="content-card">', unsafe_allow_html=True)
-    # interest_section()  # 恢复你的模块
+    interest_section()  # 恢复你的模块
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ==================== 页脚 ====================
