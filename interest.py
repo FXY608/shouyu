@@ -124,7 +124,7 @@ def generate_sign_dance_video(lyrics_lines, progress_callback=None):
 
 def interest_section():
     st.markdown('<h3 style="color:#3a5a6e;">🎵 创 · 手语舞</h3>', unsafe_allow_html=True)
-    st.markdown('<p style="color:#6b8a9e;">上传音乐，让手语随旋律绽放</p >', unsafe_allow_html=True)
+    st.markdown('<p style="color:#6b8a9e;">上传音乐，让手语随旋律绽放</p>', unsafe_allow_html=True)
     # ... 其余代码不变
     
     if not MOVIEPY_OK:
